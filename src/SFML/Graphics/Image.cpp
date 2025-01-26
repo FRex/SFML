@@ -47,6 +47,7 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <fstream>
 
 #include <cassert>
 #include <cstring>
@@ -92,6 +93,14 @@ struct StbDeleter
     }
 };
 using StbPtr = std::unique_ptr<stbi_uc, StbDeleter>;
+
+void writeToFstream(void* context, void* data, int size)
+{
+    std::ofstream * file = static_cast<std::ofstream*>(context);
+    if(*file)
+        file->write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
+}
+
 } // namespace
 
 
@@ -327,25 +336,29 @@ bool Image::saveToFile(const std::filesystem::path& filename) const
         if (extension == ".bmp")
         {
             // BMP format
-            if (stbi_write_bmp(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            std::ofstream file(filename, std::ios::binary);
+            if (stbi_write_bmp_to_func(writeToFstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data()) && file)
                 return true;
         }
         else if (extension == ".tga")
         {
             // TGA format
-            if (stbi_write_tga(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            std::ofstream file(filename, std::ios::binary);
+            if (stbi_write_tga_to_func(writeToFstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data()) && file)
                 return true;
         }
         else if (extension == ".png")
         {
             // PNG format
-            if (stbi_write_png(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
+            std::ofstream file(filename, std::ios::binary);
+            if (stbi_write_png_to_func(writeToFstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
                 return true;
         }
         else if (extension == ".jpg" || extension == ".jpeg")
         {
             // JPG format
-            if (stbi_write_jpg(filename.string().c_str(), convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
+            std::ofstream file(filename, std::ios::binary);
+            if (stbi_write_jpg_to_func(writeToFstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
                 return true;
         }
         else
