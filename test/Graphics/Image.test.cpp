@@ -265,6 +265,9 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(!image.loadFromFile("."));
             CHECK(!image.loadFromFile("this/does/not/exist.jpg"));
 
+            const wchar_t utf16path[2] = {0x8A9E, 0x0}; // CJK character for 'word' / 'language'
+            CHECK(!image.loadFromFile(std::filesystem::path{utf16path}));
+
             CHECK(image.getSize() == sf::Vector2u(0, 0));
             CHECK(image.getPixelsPtr() == nullptr);
         }
