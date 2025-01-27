@@ -406,6 +406,7 @@ TEST_CASE("[Graphics] sf::Image")
         SECTION("Successful save")
         {
             auto filename = std::filesystem::temp_directory_path();
+            char32_t utf32name[10] = {'X', '.', 'p', 'n', 'g'};
 
             SECTION("To .bmp")
             {
@@ -424,6 +425,29 @@ TEST_CASE("[Graphics] sf::Image")
                 filename /= "test.png";
                 CHECK(image.saveToFile(filename));
             }
+
+            SECTION("To Spanish Latin1 filename .png")
+            {
+                utf32name[0] = 0xf1; // small n with tilde
+                filename /= utf32name;
+                CHECK(image.saveToFile(filename));
+            }
+
+            SECTION("To Japanese CJK filename .png")
+            {
+                utf32name[0] = 0x65E5; // CJK symbol for sun
+                filename /= utf32name;
+                CHECK(image.saveToFile(filename));
+            }
+
+            SECTION("To emoji non-BMP Unicode filename .png")
+            {
+                utf32name[0] = 0x1F40C; // snail emoji
+                filename /= utf32name;
+                CHECK(image.saveToFile(filename));
+            }
+
+            REQUIRE(std::filesystem::exists(filename));
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits
 
