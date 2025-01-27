@@ -76,6 +76,29 @@ int eof(void* user)
     return stream.tell() >= stream.getSize();
 }
 
+// stb_image callbacks that operate on std::ifstream
+int readStdIfStream(void* user, char* data, int size)
+{
+    auto& stream = *static_cast<std::ifstream*>(user);
+    if(!stream.read(data, size))
+        return -1;
+
+    return static_cast<int>(stream.gcount());
+}
+
+void skipStdIfStream(void* user, int size)
+{
+    auto& stream = *static_cast<std::ifstream*>(user);
+    if(!stream.seekg(size, std::ios_base::cur))
+        sf::err() << "Failed to seek image loader std::ifstream" << std::endl;
+}
+
+int eofStdIfStream(void* user)
+{
+    auto& stream = *static_cast<std::ifstream*>(user);
+    return stream.eof();
+}
+
 // stb_image callback for constructing a buffer
 void bufferFromCallback(void* context, void* data, int size)
 {
@@ -221,19 +244,29 @@ bool Image::loadFromFile(const std::filesystem::path& filename)
     // Clear the array (just in case)
     m_pixels.clear();
 
-    // Load the image and get a pointer to the pixels in memory
-    int width    = 0;
-    int height   = 0;
-    int channels = 0;
-    if (const auto ptr = StbPtr(stbi_load(filename.string().c_str(), &width, &height, &channels, STBI_rgb_alpha)))
+    std::ifstream stream(filename, std::ios::binary);
+    if(stream)
     {
-        // Assign the image properties
-        m_size = Vector2u(Vector2i(width, height));
+        // Setup the stb_image callbacks for the std::ifstream
+        stbi_io_callbacks callbacks;
+        callbacks.read = readStdIfStream;
+        callbacks.skip = skipStdIfStream;
+        callbacks.eof  = eofStdIfStream;
 
-        // Copy the loaded pixels to the pixel buffer
-        m_pixels.assign(ptr.get(), ptr.get() + width * height * 4);
+        // Load the image and get a pointer to the pixels in memory
+        int width    = 0;
+        int height   = 0;
+        int channels = 0;
+        if (const auto ptr = StbPtr(stbi_load_from_callbacks(&callbacks, &stream, &width, &height, &channels, STBI_rgb_alpha)))
+        {
+            // Assign the image properties
+            m_size = Vector2u(Vector2i(width, height));
 
-        return true;
+            // Copy the loaded pixels to the pixel buffer
+            m_pixels.assign(ptr.get(), ptr.get() + width * height * 4);
+
+            return true;
+        }
     }
 
     // Error, failed to load the image
