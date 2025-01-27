@@ -406,7 +406,7 @@ TEST_CASE("[Graphics] sf::Image")
         SECTION("Successful save")
         {
             auto filename = std::filesystem::temp_directory_path();
-            char32_t utf32name[10] = {'X', '.', 'p', 'n', 'g'};
+            std::array<char32_t, 6> = {'X', '.', 'p', 'n', 'g', '\0'};
 
             SECTION("To .bmp")
             {

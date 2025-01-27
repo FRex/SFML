@@ -117,7 +117,7 @@ using StbPtr = std::unique_ptr<stbi_uc, StbDeleter>;
 
 void writeToFstream(void* context, void* data, int size)
 {
-    std::ofstream * file = static_cast<std::ofstream*>(context);
+    auto& file = *static_cast<std::ofstream*>(context);
     if(*file)
         file->write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
 }
