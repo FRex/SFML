@@ -265,6 +265,17 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(!image.loadFromFile("."));
             CHECK(!image.loadFromFile("this/does/not/exist.jpg"));
 
+            std::array<char32_t, 10> utf32name = {'X', 'f', 'a', 'k', 'e', '.', 'p', 'n', 'g', '\0'};
+
+            utf32name[0] = 0xf1; // small n with tilde
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
+            utf32name[0] = 0x65E5; // CJK symbol for sun
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
+            utf32name[0] = 0x1F40C; // snail emoji
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
             CHECK(image.getSize() == sf::Vector2u(0, 0));
             CHECK(image.getPixelsPtr() == nullptr);
         }
