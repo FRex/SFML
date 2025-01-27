@@ -429,21 +429,21 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To Spanish Latin1 filename .png")
             {
                 utf32name[0] = 0xf1; // small n with tilde
-                filename /= utf32name;
+                filename /= utf32name.data();
                 CHECK(image.saveToFile(filename));
             }
 
             SECTION("To Japanese CJK filename .png")
             {
                 utf32name[0] = 0x65E5; // CJK symbol for sun
-                filename /= utf32name;
+                filename /= utf32name.data();
                 CHECK(image.saveToFile(filename));
             }
 
             SECTION("To emoji non-BMP Unicode filename .png")
             {
                 utf32name[0] = 0x1F40C; // snail emoji
-                filename /= utf32name;
+                filename /= utf32name.data();
                 CHECK(image.saveToFile(filename));
             }
 
