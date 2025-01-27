@@ -80,9 +80,7 @@ int eof(void* user)
 int readStdIfStream(void* user, char* data, int size)
 {
     auto& stream = *static_cast<std::ifstream*>(user);
-    if(!stream.read(data, size))
-        return -1;
-
+    stream.read(data, size);
     return static_cast<int>(stream.gcount());
 }
 
