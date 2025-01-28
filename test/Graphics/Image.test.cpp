@@ -265,6 +265,20 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(!image.loadFromFile("."));
             CHECK(!image.loadFromFile("this/does/not/exist.jpg"));
 
+            std::array<char32_t, 10> utf32name = {'X', 'f', 'a', 'k', 'e', '.', 'p', 'n', 'g', '\0'};
+
+            utf32name[0] = 0xf1; // small n with tilde, outside of ascii but inside common latin1 codepage
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
+            utf32name[0] = 0x144; // small n with acute accent, outside of latin1 codepage
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
+            utf32name[0] = 0x65E5; // CJK symbol for sun, outside of any european codepage
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
+            utf32name[0] = 0x1F40C; // snail emoji, outside of Basic Multilingual Plane
+            CHECK(!image.loadFromFile(std::filesystem::path(utf32name.data())));
+
             CHECK(image.getSize() == sf::Vector2u(0, 0));
             CHECK(image.getPixelsPtr() == nullptr);
         }
@@ -405,7 +419,8 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful save")
         {
-            auto filename = std::filesystem::temp_directory_path();
+            auto                    filename  = std::filesystem::temp_directory_path();
+            std::array<char32_t, 6> utf32name = {'X', '.', 'p', 'n', 'g', '\0'};
 
             SECTION("To .bmp")
             {
@@ -424,6 +439,35 @@ TEST_CASE("[Graphics] sf::Image")
                 filename /= "test.png";
                 CHECK(image.saveToFile(filename));
             }
+
+            SECTION("To Spanish Latin1 filename .png")
+            {
+                utf32name[0] = 0xf1; // small n with tilde, outside of ascii but inside common latin1 codepage
+                filename /= utf32name.data();
+                CHECK(image.saveToFile(filename));
+            }
+
+            SECTION("To Polish filename .png")
+            {
+                utf32name[0] = 0x144; // small n with acute accent, outside of latin1 codepage
+                filename /= utf32name.data();
+                CHECK(image.saveToFile(filename));
+            }
+
+            SECTION("To Japanese CJK filename .png")
+            {
+                utf32name[0] = 0x65E5; // CJK symbol for sun, outside of any european codepage
+                filename /= utf32name.data();
+                CHECK(image.saveToFile(filename));
+            }
+
+            SECTION("To emoji non-BMP Unicode filename .png")
+            {
+                filename /= utf32name.data(); // snail emoji, outside of Basic Multilingual Plane
+                CHECK(image.saveToFile(filename));
+            }
+
+            REQUIRE(std::filesystem::exists(filename));
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits
 
