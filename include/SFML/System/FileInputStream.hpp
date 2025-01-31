@@ -34,6 +34,7 @@
 #include <SFML/System/InputStream.hpp>
 
 #include <filesystem>
+#include <fstream>
 #include <memory>
 
 #include <cstdint>
@@ -157,22 +158,13 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Deleter for stdio file stream that closes the file stream
-    ///
-    ////////////////////////////////////////////////////////////
-    struct FileCloser
-    {
-        void operator()(std::FILE* file);
-    };
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
     std::unique_ptr<priv::ResourceStream> m_androidFile;
 #endif
 
-    std::unique_ptr<std::FILE, FileCloser> m_file; //!< stdio file stream
+    std::ifstream m_file; //!< stdio file stream
 };
 
 } // namespace sf

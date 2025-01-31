@@ -38,13 +38,6 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void FileInputStream::FileCloser::operator()(std::FILE* file)
-{
-    std::fclose(file);
-}
-
-
-////////////////////////////////////////////////////////////
 FileInputStream::FileInputStream() = default;
 
 
@@ -78,12 +71,8 @@ bool FileInputStream::open(const std::filesystem::path& filename)
         return m_androidFile->tell().has_value();
     }
 #endif
-#ifdef SFML_SYSTEM_WINDOWS
-    m_file.reset(_wfopen(filename.c_str(), L"rb"));
-#else
-    m_file.reset(std::fopen(filename.c_str(), "rb"));
-#endif
-    return m_file != nullptr;
+    m_file.open(filename, std::ios::binary);
+    return m_file.is_open();
 }
 
 
@@ -100,7 +89,8 @@ std::optional<std::size_t> FileInputStream::read(void* data, std::size_t size)
 #endif
     if (!m_file)
         return std::nullopt;
-    return std::fread(data, 1, size, m_file.get());
+    m_file.read(static_cast<char*>(data), static_cast<std::streamsize>(size));
+    return m_file.gcount();
 }
 
 
@@ -117,9 +107,9 @@ std::optional<std::size_t> FileInputStream::seek(std::size_t position)
 #endif
     if (!m_file)
         return std::nullopt;
-    if (std::fseek(m_file.get(), static_cast<long>(position), SEEK_SET))
+    m_file.seekg(static_cast<std::streamoff>(position));
+    if (m_file.fail())
         return std::nullopt;
-
     return tell();
 }
 
@@ -137,7 +127,7 @@ std::optional<std::size_t> FileInputStream::tell()
 #endif
     if (!m_file)
         return std::nullopt;
-    const auto position = std::ftell(m_file.get());
+    const auto position = m_file.tellg();
     return position < 0 ? std::nullopt : std::optional<std::size_t>(position);
 }
 
@@ -156,7 +146,7 @@ std::optional<std::size_t> FileInputStream::getSize()
     if (!m_file)
         return std::nullopt;
     const auto position = tell().value();
-    std::fseek(m_file.get(), 0, SEEK_END);
+    m_file.seekg(0, std::ios::end);
     const std::optional size = tell();
 
     if (!seek(position).has_value())
