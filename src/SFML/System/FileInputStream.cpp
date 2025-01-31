@@ -105,6 +105,7 @@ std::optional<std::size_t> FileInputStream::seek(std::size_t position)
         return m_androidFile->seek(position);
     }
 #endif
+    m_file.clear();
     if (!m_file)
         return std::nullopt;
     m_file.seekg(static_cast<std::streamoff>(position));
