@@ -457,7 +457,7 @@ private:
     Info                         m_info;           //!< Information about the font
     mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
-    std::shared_ptr<sf::InputStream> m_stream; //!< Stream for openFromFile and openFromMemory
+    std::shared_ptr<InputStream> m_stream; //!< Stream for openFromFile and openFromMemory
 };
 
 } // namespace sf
