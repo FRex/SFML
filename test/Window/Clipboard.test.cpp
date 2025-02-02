@@ -18,6 +18,20 @@ TEST_CASE("[Window] sf::Clipboard", runDisplayTests())
         CHECK(sf::Clipboard::getString() == "Welcome to SFML!");
     }
 
+    SECTION("Set/get CJK string")
+    {
+        const sf::String str(U"Welcome \u65E5!");
+        sf::Clipboard::setString(str);
+        CHECK(sf::Clipboard::getString() == str);
+    }
+
+    SECTION("Set/get non-BMP emoji string")
+    {
+        const sf::String str(U"Welcome \U0001F40C!");
+        sf::Clipboard::setString(str);
+        CHECK(sf::Clipboard::getString() == str);
+    }
+
     // Restore clipboard
     sf::Clipboard::setString(currentClipboard);
 
