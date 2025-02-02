@@ -65,7 +65,10 @@ String ClipboardImpl::getString()
         return text;
     }
 
-    text = String(static_cast<wchar_t*>(GlobalLock(clipboardHandle)));
+    const wchar_t* wstringptr = static_cast<wchar_t*>(GlobalLock(clipboardHandle));
+    if (wstringptr)
+        text = sf::String::fromUtf16(wstringptr, wstringptr + std::wcslen(wstringptr));
+
     GlobalUnlock(clipboardHandle);
 
     CloseClipboard();
@@ -90,10 +93,11 @@ void ClipboardImpl::setString(const String& text)
     }
 
     // Create a Win32-compatible string
-    const std::size_t stringSize = (text.getSize() + 1) * sizeof(WCHAR);
+    const auto        utf16str   = text.toUtf16();
+    const std::size_t stringSize = (utf16str.length() + 1) * sizeof(WCHAR);
     if (const HANDLE stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize))
     {
-        std::memcpy(GlobalLock(stringHandle), text.toWideString().data(), stringSize);
+        std::memcpy(GlobalLock(stringHandle), utf16str.c_str(), stringSize);
         GlobalUnlock(stringHandle);
         SetClipboardData(CF_UNICODETEXT, stringHandle);
     }
