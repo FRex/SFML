@@ -73,7 +73,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterWav::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".wav";
+    return toLower((const char*)filename.extension().u8string().c_str()) == ".wav";
 }
 
 

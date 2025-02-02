@@ -42,7 +42,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterOgg::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".ogg";
+    return toLower((const char*)filename.extension().u8string().c_str()) == ".ogg";
 }
 
 

@@ -47,7 +47,7 @@ void SoundFileWriterFlac::FlacStreamEncoderDeleter::operator()(FLAC__StreamEncod
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterFlac::check(const std::filesystem::path& filename)
 {
-    return toLower(filename.extension().string()) == ".flac";
+    return toLower((const char*)filename.extension().u8string().c_str()) == ".flac";
 }
 
 
