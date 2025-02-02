@@ -190,6 +190,12 @@ bool Font::openFromMemory(const void* data, std::size_t sizeInBytes)
     // Cleanup the previous resources
     cleanup();
 
+    if (!data)
+    {
+        err() << "Failed to load font from memory - data pointer is nullptr" << std::endl;
+        return false;
+    }
+
     // Create memroy stream, the memory is owned by the user
     auto memorystream = std::make_shared<MemoryInputStream>(data, sizeInBytes);
 
