@@ -45,13 +45,6 @@
 #include <cstdint>
 
 
-#ifdef SFML_SYSTEM_ANDROID
-namespace sf::priv
-{
-class ResourceStream;
-}
-#endif
-
 namespace sf
 {
 class InputStream;
@@ -399,6 +392,13 @@ private:
     ////////////////////////////////////////////////////////////
     void cleanup();
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Load from stream and print errors with wording "from type"
+    ///
+    ////////////////////////////////////////////////////////////
+    bool renameThisSomeone(InputStream& stream, const char* type);
+
     ////////////////////////////////////////////////////////////
     /// \brief Find or create the glyphs page corresponding to the given character size
     ///
@@ -457,9 +457,7 @@ private:
     Info                         m_info;           //!< Information about the font
     mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
     mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
-#ifdef SFML_SYSTEM_ANDROID
-    std::shared_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
-#endif
+    std::shared_ptr<sf::InputStream> m_stream; //!< Stream for openFromFile and openFromMemory
 };
 
 } // namespace sf
